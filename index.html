@@ -343,12 +343,12 @@ video.shot{display:block;width:100%;height:auto;background:#0B1328;}
 @page{size:1920px 1080px;margin:0;}
 
 /* subtle prev/next (hidden in PDF/still renders) */
-.pager{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:50;display:flex;gap:8px;opacity:.55;transition:opacity .25s;}
-.pager:hover{opacity:.9;}
-.pager button{width:40px;height:40px;display:grid;place-items:center;padding:0;border-radius:50%;border:1px solid rgba(96,165,250,.45);background:rgba(12,22,48,.7);color:#C3CDDC;cursor:pointer;}
+.pager{position:absolute;right:var(--pad);bottom:16px;z-index:6;display:flex;gap:12px;opacity:.85;transition:opacity .25s;}
+.pager:hover{opacity:1;}
+.pager button{width:50px;height:50px;display:grid;place-items:center;padding:0;border-radius:50%;border:1.5px solid rgba(34,211,238,.6);background:rgba(19,33,63,.9);color:#22D3EE;cursor:pointer;box-shadow:0 0 18px -6px rgba(34,211,238,.6);}
 .pager button:hover{color:#22D3EE;border-color:#22D3EE;}
 .pager button:disabled{opacity:.35;cursor:default;}
-.pager svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.pager svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
 .print .pager,.still .pager{display:none;}
 </style>
 </head>
@@ -657,7 +657,8 @@ video.shot{display:block;width:100%;height:auto;background:#0B1328;}
   const show=n=>{cur=Math.max(0,Math.min(total-1,n));document.querySelectorAll('.vid.on video').forEach(v=>v.pause());slides.forEach((s,i)=>s.classList.toggle('on',i===cur));history.replaceState(null,'','#'+(cur+1));};
   addEventListener('resize',fit); fit(); show(cur);
   const pv=document.querySelector('.pager .pv'),nx=document.querySelector('.pager .nx');
-  const upd=()=>{pv.disabled=cur===0;nx.disabled=cur===total-1;};
+  const pg=document.querySelector('.pager');
+  const upd=()=>{pv.disabled=cur===0;nx.disabled=cur===total-1;if(pg.parentNode!==slides[cur])slides[cur].appendChild(pg);};
   pv.addEventListener('click',e=>{e.stopPropagation();show(cur-1);upd();});
   nx.addEventListener('click',e=>{e.stopPropagation();show(cur+1);upd();});
   addEventListener('hashchange',upd); addEventListener('keyup',upd); addEventListener('click',()=>setTimeout(upd)); addEventListener('touchend',()=>setTimeout(upd),{passive:true}); upd();
