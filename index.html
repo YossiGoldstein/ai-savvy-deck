@@ -341,6 +341,15 @@ video.shot{display:block;width:100%;height:auto;background:#0B1328;}
 .print .deck{position:static;}
 .print .slide{position:relative;left:0;top:0;margin:0;transform:none;visibility:visible;opacity:1;transition:none;page-break-after:always;break-after:page;}
 @page{size:1920px 1080px;margin:0;}
+
+/* subtle prev/next (hidden in PDF/still renders) */
+.pager{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:50;display:flex;gap:6px;opacity:.28;transition:opacity .25s;}
+.pager:hover{opacity:.9;}
+.pager button{width:34px;height:34px;display:grid;place-items:center;padding:0;border-radius:50%;border:1px solid rgba(96,165,250,.45);background:rgba(12,22,48,.7);color:#C3CDDC;cursor:pointer;}
+.pager button:hover{color:#22D3EE;border-color:#22D3EE;}
+.pager button:disabled{opacity:.35;cursor:default;}
+.pager svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.print .pager,.still .pager{display:none;}
 </style>
 </head>
 <body>
@@ -619,6 +628,7 @@ video.shot{display:block;width:100%;height:auto;background:#0B1328;}
     <div class="contact"><strong>Yossi Goldstein</strong><i></i><span>(646) 820-4202</span><i></i><span class="m">aisavvy.us</span><i></i><span class="m">dna.aisavvy.us</span></div>
   </section>
 </main>
+<nav class="pager" aria-label="Slides"><button type="button" class="pv" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="nx" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button></nav>
 
 <script>
 (function(){
@@ -630,7 +640,7 @@ video.shot{display:block;width:100%;height:auto;background:#0B1328;}
     const v=document.createElement('video'); v.src=el.dataset.src; v.controls=true; v.autoplay=true; v.playsInline=true;
     el.querySelector('img').replaceWith(v); el.classList.add('on'); v.play().catch(()=>{});
   }));
-  if(print) document.documentElement.classList.add('print');
+  if(print) document.documentElement.classList.add('print'); if(still) document.documentElement.classList.add('still');
   const slides=[...document.querySelectorAll('.slide')];
   const total=slides.length, pad=n=>String(n).padStart(2,'0');
   slides.forEach((s,i)=>{
@@ -646,6 +656,11 @@ video.shot{display:block;width:100%;height:auto;background:#0B1328;}
   const fit=()=>document.documentElement.style.setProperty('--s',Math.min(innerWidth/1920,innerHeight/1080));
   const show=n=>{cur=Math.max(0,Math.min(total-1,n));document.querySelectorAll('.vid.on video').forEach(v=>v.pause());slides.forEach((s,i)=>s.classList.toggle('on',i===cur));history.replaceState(null,'','#'+(cur+1));};
   addEventListener('resize',fit); fit(); show(cur);
+  const pv=document.querySelector('.pager .pv'),nx=document.querySelector('.pager .nx');
+  const upd=()=>{pv.disabled=cur===0;nx.disabled=cur===total-1;};
+  pv.addEventListener('click',e=>{e.stopPropagation();show(cur-1);upd();});
+  nx.addEventListener('click',e=>{e.stopPropagation();show(cur+1);upd();});
+  addEventListener('hashchange',upd); addEventListener('keyup',upd); addEventListener('click',()=>setTimeout(upd)); addEventListener('touchend',()=>setTimeout(upd),{passive:true}); upd();
   addEventListener('hashchange',()=>show((parseInt(location.hash.slice(1))||1)-1));
   addEventListener('keydown',e=>{
     if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(cur+1);}
